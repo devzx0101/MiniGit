@@ -9,5 +9,13 @@ include_directories(src)
 add_executable(minigit
     src/main.cpp
     src/commands/init.cpp
+    src/commands/add.cpp
+    src/commands/ls_files.cpp
+    src/commands/hash_object.cpp
+    src/commands/cat_file.cpp
+    src/repository/index.cpp
+    src/objects/object_store.cpp
+    src/objects/blob.cpp
+    src/hashing/sha1.cpp
     src/filesystem/file_utils.cpp
 )
