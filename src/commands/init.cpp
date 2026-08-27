@@ -3,6 +3,8 @@
 #include <iostream>
 
 int handleInit(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
     const std::string repoDir = ".minigit";
 
     bool alreadyExists = FileUtils::directoryExists(repoDir);

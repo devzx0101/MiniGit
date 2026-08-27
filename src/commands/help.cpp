@@ -2,6 +2,8 @@
 #include <iostream>
 
 int handleHelp(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
     std::cout << "Mini-Git: A serious, functional educational Git implementation in C++\n\n"
               << "Usage: minigit <command> [<args>]\n\n"
               << "Start a working area:\n"

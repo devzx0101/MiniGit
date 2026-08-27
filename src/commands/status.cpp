@@ -6,6 +6,8 @@
 #include <string>
 
 int handleStatus(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
     if (!FileUtils::directoryExists(".minigit")) {
         std::cerr << "fatal: not a minigit repository (or any of the parent directories): .minigit\n";
         return 1;
