@@ -1,6 +1,6 @@
-#include "reflog.hpp"
-#include "../repository/reference.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/reflog.hpp"
+#include "repository/reference.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 #include <algorithm>

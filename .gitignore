@@ -4,6 +4,7 @@ bin/
 *.exe
 *.o
 *.obj
+compile_commands.json
 
 # Test repository directories
 .minigit/

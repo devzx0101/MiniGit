@@ -1,10 +1,10 @@
-#include "merge_engine.hpp"
-#include "reference.hpp"
-#include "working_tree.hpp"
-#include "../objects/commit.hpp"
-#include "../objects/tree.hpp"
-#include "../objects/blob.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "repository/merge_engine.hpp"
+#include "repository/reference.hpp"
+#include "repository/working_tree.hpp"
+#include "objects/commit.hpp"
+#include "objects/tree.hpp"
+#include "objects/blob.hpp"
+#include "filesystem/file_utils.hpp"
 #include <queue>
 #include <set>
 #include <sstream>

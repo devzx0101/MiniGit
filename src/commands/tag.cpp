@@ -1,6 +1,6 @@
-#include "tag.hpp"
-#include "../repository/reference.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/tag.hpp"
+#include "repository/reference.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

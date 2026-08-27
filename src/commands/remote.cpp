@@ -1,8 +1,8 @@
-#include "remote.hpp"
-#include "../repository/remote_manager.hpp"
-#include "../repository/reference.hpp"
-#include "../repository/merge_engine.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/remote.hpp"
+#include "repository/remote_manager.hpp"
+#include "repository/reference.hpp"
+#include "repository/merge_engine.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

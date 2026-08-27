@@ -1,7 +1,7 @@
-#include "log.hpp"
-#include "../repository/reference.hpp"
-#include "../objects/commit.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/log.hpp"
+#include "repository/reference.hpp"
+#include "objects/commit.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 #include <sstream>

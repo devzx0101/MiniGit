@@ -1,10 +1,10 @@
-#include "restore.hpp"
-#include "../repository/index.hpp"
-#include "../repository/reference.hpp"
-#include "../repository/working_tree.hpp"
-#include "../objects/commit.hpp"
-#include "../objects/tree.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/restore.hpp"
+#include "repository/index.hpp"
+#include "repository/reference.hpp"
+#include "repository/working_tree.hpp"
+#include "objects/commit.hpp"
+#include "objects/tree.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <vector>
 #include <string>

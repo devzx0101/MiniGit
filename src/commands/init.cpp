@@ -1,5 +1,5 @@
-#include "init.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/init.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 
 int handleInit(int argc, char* argv[]) {

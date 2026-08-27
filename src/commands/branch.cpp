@@ -1,6 +1,6 @@
-#include "branch.hpp"
-#include "../repository/reference.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/branch.hpp"
+#include "repository/reference.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

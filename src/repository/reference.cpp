@@ -1,6 +1,6 @@
-#include "reference.hpp"
-#include "../filesystem/file_utils.hpp"
-#include "../objects/object_store.hpp"
+#include "repository/reference.hpp"
+#include "filesystem/file_utils.hpp"
+#include "objects/object_store.hpp"
 #include <sstream>
 #include <algorithm>
 #include <iostream>

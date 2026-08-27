@@ -1,7 +1,7 @@
-#include "status.hpp"
-#include "../repository/working_tree.hpp"
-#include "../repository/reference.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/status.hpp"
+#include "repository/working_tree.hpp"
+#include "repository/reference.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

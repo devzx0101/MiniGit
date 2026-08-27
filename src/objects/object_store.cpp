@@ -1,6 +1,6 @@
-#include "object_store.hpp"
-#include "../hashing/sha1.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "objects/object_store.hpp"
+#include "hashing/sha1.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <sstream>
 

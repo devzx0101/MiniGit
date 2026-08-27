@@ -1,9 +1,9 @@
-#include "commit.hpp"
-#include "../repository/index.hpp"
-#include "../repository/reference.hpp"
-#include "../objects/tree.hpp"
-#include "../objects/commit.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/commit.hpp"
+#include "repository/index.hpp"
+#include "repository/reference.hpp"
+#include "objects/tree.hpp"
+#include "objects/commit.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

@@ -1,6 +1,6 @@
-#include "ls_files.hpp"
-#include "../repository/index.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/ls_files.hpp"
+#include "repository/index.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 
 int handleLsFiles(int argc, char* argv[]) {

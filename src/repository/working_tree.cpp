@@ -1,10 +1,10 @@
-#include "working_tree.hpp"
-#include "reference.hpp"
-#include "ignore.hpp"
-#include "../objects/tree.hpp"
-#include "../objects/commit.hpp"
-#include "../objects/blob.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "repository/working_tree.hpp"
+#include "repository/reference.hpp"
+#include "repository/ignore.hpp"
+#include "objects/tree.hpp"
+#include "objects/commit.hpp"
+#include "objects/blob.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <set>
 

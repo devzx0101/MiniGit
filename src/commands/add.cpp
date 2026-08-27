@@ -1,9 +1,10 @@
-#include "add.hpp"
-#include "../repository/index.hpp"
-#include "../repository/ignore.hpp"
-#include "../objects/blob.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/add.hpp"
+#include "repository/index.hpp"
+#include "repository/ignore.hpp"
+#include "objects/blob.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
+#include <string>
 #include <vector>
 
 static void addSingleFile(const std::string& path, Repository::Index& index, bool& hasErrors) {
@@ -73,8 +74,7 @@ int handleAdd(int argc, char* argv[]) {
         } else {
             // Single file add
             if (ignore.isIgnored(norm)) {
-                // If explicitly adding an ignored file or regular file
-                // Git typically warns or adds; let's allow or skip if not existing
+                // If explicitly adding an ignored file
             }
             addSingleFile(norm, index, hasErrors);
         }

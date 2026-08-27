@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "../repository/index.hpp"
+#include "repository/index.hpp"
 
 namespace Objects {
 

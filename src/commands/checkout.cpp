@@ -1,8 +1,8 @@
-#include "checkout.hpp"
-#include "../repository/reference.hpp"
-#include "../repository/working_tree.hpp"
-#include "../objects/commit.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/checkout.hpp"
+#include "repository/reference.hpp"
+#include "repository/working_tree.hpp"
+#include "objects/commit.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

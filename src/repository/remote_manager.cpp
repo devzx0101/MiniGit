@@ -1,8 +1,8 @@
-#include "remote_manager.hpp"
-#include "reference.hpp"
-#include "working_tree.hpp"
-#include "../objects/commit.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "repository/remote_manager.hpp"
+#include "repository/reference.hpp"
+#include "repository/working_tree.hpp"
+#include "objects/commit.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <sstream>
 

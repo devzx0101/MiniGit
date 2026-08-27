@@ -1,11 +1,11 @@
-#include "diff.hpp"
-#include "../repository/index.hpp"
-#include "../repository/reference.hpp"
-#include "../repository/diff_engine.hpp"
-#include "../objects/blob.hpp"
-#include "../objects/commit.hpp"
-#include "../objects/tree.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/diff.hpp"
+#include "repository/index.hpp"
+#include "repository/reference.hpp"
+#include "repository/diff_engine.hpp"
+#include "objects/blob.hpp"
+#include "objects/commit.hpp"
+#include "objects/tree.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 

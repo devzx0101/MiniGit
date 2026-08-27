@@ -1,6 +1,6 @@
-#include "blob.hpp"
-#include "object_store.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "objects/blob.hpp"
+#include "objects/object_store.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 
 namespace Objects {

@@ -1,6 +1,6 @@
-#include "cat_file.hpp"
-#include "../objects/object_store.hpp"
-#include "../repository/reference.hpp"
+#include "commands/cat_file.hpp"
+#include "objects/object_store.hpp"
+#include "repository/reference.hpp"
 #include <iostream>
 #include <string>
 

@@ -1,5 +1,5 @@
-#include "tree.hpp"
-#include "object_store.hpp"
+#include "objects/tree.hpp"
+#include "objects/object_store.hpp"
 #include <sstream>
 #include <algorithm>
 #include <iostream>

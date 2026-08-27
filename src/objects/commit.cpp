@@ -1,6 +1,6 @@
-#include "commit.hpp"
-#include "object_store.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "objects/commit.hpp"
+#include "objects/object_store.hpp"
+#include "filesystem/file_utils.hpp"
 #include <sstream>
 
 namespace Objects {

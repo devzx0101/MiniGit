@@ -5,6 +5,10 @@
         "${workspaceFolder}/src",
         "${workspaceFolder}/src/**"
     ],
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
-    "cmake.sourceDirectory": "${workspaceFolder}"
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "clangd.arguments": [
+        "--query-driver=C:/msys64/ucrt64/bin/g++.exe,C:/msys64/ucrt64/bin/gcc.exe",
+        "--compile-commands-dir=${workspaceFolder}"
+    ]
 }

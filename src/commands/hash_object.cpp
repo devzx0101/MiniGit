@@ -1,5 +1,5 @@
-#include "hash_object.hpp"
-#include "../objects/blob.hpp"
+#include "commands/hash_object.hpp"
+#include "objects/blob.hpp"
 #include <iostream>
 #include <string>
 

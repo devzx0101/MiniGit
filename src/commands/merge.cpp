@@ -1,6 +1,6 @@
-#include "merge.hpp"
-#include "../repository/merge_engine.hpp"
-#include "../filesystem/file_utils.hpp"
+#include "commands/merge.hpp"
+#include "repository/merge_engine.hpp"
+#include "filesystem/file_utils.hpp"
 #include <iostream>
 #include <string>
 
