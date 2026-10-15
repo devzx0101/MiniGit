@@ -6,8 +6,32 @@
 #include "objects/commit.hpp"
 #include "objects/tree.hpp"
 #include "filesystem/file_utils.hpp"
+#include "terminal.hpp"
 #include <iostream>
 #include <string>
+#include <sstream>
+
+static void printColoredDiff(const std::string& diffOutput) {
+    std::istringstream stream(diffOutput);
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (line.rfind("diff --minigit", 0) == 0) {
+            std::cout << Color::BoldWhite << line << Color::Reset << "\n";
+        } else if (line.rfind("---", 0) == 0) {
+            std::cout << Color::BoldRed << line << Color::Reset << "\n";
+        } else if (line.rfind("+++", 0) == 0) {
+            std::cout << Color::BoldGreen << line << Color::Reset << "\n";
+        } else if (line.rfind("@@", 0) == 0) {
+            std::cout << Color::Cyan << line << Color::Reset << "\n";
+        } else if (!line.empty() && line[0] == '+') {
+            std::cout << Color::Green << line << Color::Reset << "\n";
+        } else if (!line.empty() && line[0] == '-') {
+            std::cout << Color::Red << line << Color::Reset << "\n";
+        } else {
+            std::cout << line << "\n";
+        }
+    }
+}
 
 int handleDiff(int argc, char* argv[]) {
     if (!FileUtils::directoryExists(".minigit")) {
@@ -63,7 +87,7 @@ int handleDiff(int argc, char* argv[]) {
 
             std::string diffOutput = Repository::DiffEngine::unifiedDiff(path, oldContent, newContent, "HEAD", "index");
             if (!diffOutput.empty()) {
-                std::cout << diffOutput;
+                printColoredDiff(diffOutput);
             }
         }
     } else {
@@ -85,7 +109,7 @@ int handleDiff(int argc, char* argv[]) {
 
             std::string diffOutput = Repository::DiffEngine::unifiedDiff(path, indexContent, worktreeContent, "index", "worktree");
             if (!diffOutput.empty()) {
-                std::cout << diffOutput;
+                printColoredDiff(diffOutput);
             }
         }
     }

@@ -1,6 +1,7 @@
 #include "commands/branch.hpp"
 #include "repository/reference.hpp"
 #include "filesystem/file_utils.hpp"
+#include "terminal.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,13 +16,13 @@ int handleBranch(int argc, char* argv[]) {
         // List branches
         auto branches = Repository::Reference::listBranches(".minigit");
         if (branches.empty()) {
-            std::cout << "* main\n";
+            std::cout << Color::BoldGreen << "* main" << Color::Reset << "\n";
             return 0;
         }
 
         for (const auto& pair : branches) {
             if (pair.second) {
-                std::cout << "* " << pair.first << "\n";
+                std::cout << Color::BoldGreen << "* " << pair.first << Color::Reset << "\n";
             } else {
                 std::cout << "  " << pair.first << "\n";
             }

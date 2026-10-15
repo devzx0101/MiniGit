@@ -2,6 +2,7 @@
 #include "repository/working_tree.hpp"
 #include "repository/reference.hpp"
 #include "filesystem/file_utils.hpp"
+#include "terminal.hpp"
 #include <iostream>
 #include <string>
 
@@ -18,11 +19,11 @@ int handleStatus(int argc, char* argv[]) {
     bool hasHead = Repository::Reference::resolveHead(headCommit, ".minigit");
 
     if (!branchName.empty()) {
-        std::cout << "On branch " << branchName << "\n";
+        std::cout << "On branch " << Color::BoldGreen << branchName << Color::Reset << "\n";
     } else if (hasHead) {
-        std::cout << "HEAD detached at " << headCommit.substr(0, 7) << "\n";
+        std::cout << "HEAD detached at " << Color::BoldYellow << headCommit.substr(0, 7) << Color::Reset << "\n";
     } else {
-        std::cout << "On branch " << (branchName.empty() ? "main" : branchName) << "\n\nNo commits yet\n";
+        std::cout << "On branch " << Color::BoldGreen << (branchName.empty() ? "main" : branchName) << Color::Reset << "\n\nNo commits yet\n";
     }
 
     auto status = Repository::WorkingTree::getStatus(".minigit");
@@ -32,13 +33,13 @@ int handleStatus(int argc, char* argv[]) {
         std::cout << "\nChanges to be committed:\n"
                   << "  (use \"minigit restore --staged <file>...\" to unstage)\n";
         for (const auto& pair : status.stagedNew) {
-            std::cout << "\tnew file:   " << pair.first << "\n";
+            std::cout << Color::Green << "\tnew file:   " << pair.first << Color::Reset << "\n";
         }
         for (const auto& pair : status.stagedModified) {
-            std::cout << "\tmodified:   " << pair.first << "\n";
+            std::cout << Color::Green << "\tmodified:   " << pair.first << Color::Reset << "\n";
         }
         for (const auto& path : status.stagedDeleted) {
-            std::cout << "\tdeleted:    " << path << "\n";
+            std::cout << Color::Green << "\tdeleted:    " << path << Color::Reset << "\n";
         }
     }
 
@@ -48,10 +49,10 @@ int handleStatus(int argc, char* argv[]) {
                   << "  (use \"minigit add <file>...\" to update what will be committed)\n"
                   << "  (use \"minigit restore <file>...\" to discard changes in working directory)\n";
         for (const auto& path : status.unstagedModified) {
-            std::cout << "\tmodified:   " << path << "\n";
+            std::cout << Color::Red << "\tmodified:   " << path << Color::Reset << "\n";
         }
         for (const auto& path : status.unstagedDeleted) {
-            std::cout << "\tdeleted:    " << path << "\n";
+            std::cout << Color::Red << "\tdeleted:    " << path << Color::Reset << "\n";
         }
     }
 
@@ -60,7 +61,7 @@ int handleStatus(int argc, char* argv[]) {
         std::cout << "\nUntracked files:\n"
                   << "  (use \"minigit add <file>...\" to include in what will be committed)\n";
         for (const auto& path : status.untracked) {
-            std::cout << "\t" << path << "\n";
+            std::cout << Color::Red << "\t" << path << Color::Reset << "\n";
         }
     }
 
