@@ -7,6 +7,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(src)
 
+if(WIN32 AND EXISTS "C:/msys64/ucrt64")
+    list(APPEND CMAKE_PREFIX_PATH "C:/msys64/ucrt64")
+endif()
+
+find_package(ZLIB REQUIRED)
+
 set(MINIGIT_SOURCES
     src/commands/init.cpp
     src/commands/add.cpp
@@ -25,6 +31,10 @@ set(MINIGIT_SOURCES
     src/commands/ls_files.cpp
     src/commands/hash_object.cpp
     src/commands/remote.cpp
+    src/commands/stash.cpp
+    src/commands/clean.cpp
+    src/commands/cherry_pick.cpp
+    src/commands/rebase.cpp
     src/commands/help.cpp
     src/repository/index.cpp
     src/repository/reference.cpp
@@ -39,16 +49,19 @@ set(MINIGIT_SOURCES
     src/objects/commit.cpp
     src/hashing/sha1.cpp
     src/filesystem/file_utils.cpp
+    src/compression/zlib_utils.cpp
 )
 
 add_executable(minigit
     src/main.cpp
     ${MINIGIT_SOURCES}
 )
+target_link_libraries(minigit PRIVATE ZLIB::ZLIB)
 
 enable_testing()
 add_executable(minigit_tests
     tests/test_runner.cpp
     ${MINIGIT_SOURCES}
 )
+target_link_libraries(minigit_tests PRIVATE ZLIB::ZLIB)
 add_test(NAME MiniGitIntegrationTests COMMAND minigit_tests)

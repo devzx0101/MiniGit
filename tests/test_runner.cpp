@@ -16,6 +16,7 @@
 #include "repository/diff_engine.hpp"
 #include "repository/merge_engine.hpp"
 #include "repository/remote_manager.hpp"
+#include "compression/zlib_utils.hpp"
 
 namespace fs = std::filesystem;
 using namespace Repository;
@@ -251,6 +252,37 @@ bool testLocalRemoteOperations() {
     return true;
 }
 
+bool testZlibCompression() {
+    std::cout << "\n=== Test 11: Zlib Deflate/Inflate & Git Object Interoperability ===\n";
+    std::string repoDir = TEST_DIR + "/.minigit";
+
+    std::string testString = "MiniGit true Git compatibility with standard zlib compression!";
+    std::string compressed;
+    bool compSuccess = Compression::compressString(testString, compressed);
+    TEST_ASSERT(compSuccess && !compressed.empty(), "String compressed successfully with zlib deflate");
+    TEST_ASSERT(Compression::isZlibCompressed(compressed), "Compressed data conforms to zlib RFC 1950 header");
+
+    std::string decompressed;
+    bool decompSuccess = Compression::decompressString(compressed, decompressed);
+    TEST_ASSERT(decompSuccess && decompressed == testString, "Decompressed data precisely matches original input");
+
+    // Test loose object file compression on disk
+    std::string fileContent = "Content-addressable storage under zlib compression";
+    Blob blob(fileContent);
+    std::string hash = blob.save(repoDir);
+    TEST_ASSERT(!hash.empty(), "Compressed object stored into repository");
+
+    std::string objPath = repoDir + "/objects/" + hash.substr(0, 2) + "/" + hash.substr(2);
+    std::string rawDiskBytes;
+    FileUtils::readFile(objPath, rawDiskBytes);
+    TEST_ASSERT(Compression::isZlibCompressed(rawDiskBytes), "Object on disk begins with zlib magic header (0x78)");
+
+    Blob loadedBlob;
+    bool loaded = Blob::load(hash, loadedBlob, repoDir);
+    TEST_ASSERT(loaded && loadedBlob.getContent() == fileContent, "Object inflated transparently on read");
+    return true;
+}
+
 int main() {
     std::cout << "========================================\n";
     std::cout << "  Mini-Git Automated Integration Tests  \n";
@@ -269,12 +301,13 @@ int main() {
     allPassed &= testTags();
     allPassed &= test3WayMergeAndConflicts();
     allPassed &= testLocalRemoteOperations();
+    allPassed &= testZlibCompression();
 
     cleanupTestDir();
 
     std::cout << "\n========================================\n";
     if (allPassed) {
-        std::cout << "  ALL 10 TEST SUITES PASSED! (100%)    \n";
+        std::cout << "  ALL 11 TEST SUITES PASSED! (100%)    \n";
         std::cout << "========================================\n";
         return 0;
     } else {

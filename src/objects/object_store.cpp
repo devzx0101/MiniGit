@@ -1,6 +1,7 @@
 #include "objects/object_store.hpp"
 #include "hashing/sha1.hpp"
 #include "filesystem/file_utils.hpp"
+#include "compression/zlib_utils.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -18,7 +19,7 @@ std::string ObjectStore::storeObject(const std::string& type, const std::string&
     std::string header = type + " " + std::to_string(content.size());
     std::string rawData = header + '\0' + content;
 
-    // 2. Compute 40-character SHA-1 hash
+    // 2. Compute 40-character SHA-1 hash (computed on raw uncompressed data with header)
     std::string hash = Hashing::SHA1::hashString(rawData);
 
     // 3. Fanout directory: first 2 chars of hash
@@ -33,7 +34,14 @@ std::string ObjectStore::storeObject(const std::string& type, const std::string&
 
     // 5. If object already exists, no need to overwrite (objects are immutable)
     if (!FileUtils::fileExists(filePath)) {
-        if (!FileUtils::writeFile(filePath, rawData)) {
+        // Compress with standard Git zlib deflate
+        std::string compressedData;
+        if (!Compression::compressString(rawData, compressedData)) {
+            // Fallback to raw if compression fails
+            compressedData = rawData;
+        }
+
+        if (!FileUtils::writeFile(filePath, compressedData)) {
             std::cerr << "Error: Failed to write object file: " << filePath << "\n";
             return "";
         }
@@ -48,10 +56,21 @@ bool ObjectStore::readObject(const std::string& hash, std::string& outType, std:
     }
 
     std::string filePath = repoDir + "/objects/" + hash.substr(0, 2) + "/" + hash.substr(2);
-    std::string rawData;
+    std::string fileBytes;
 
-    if (!FileUtils::readFile(filePath, rawData)) {
+    if (!FileUtils::readFile(filePath, fileBytes)) {
         return false;
+    }
+
+    std::string rawData;
+    // Check if the object on disk is zlib-compressed
+    if (Compression::isZlibCompressed(fileBytes)) {
+        if (!Compression::decompressString(fileBytes, rawData)) {
+            return false;
+        }
+    } else {
+        // Backward compatibility for raw/uncompressed objects
+        rawData = fileBytes;
     }
 
     // Find the null byte '\0' separating header and content
