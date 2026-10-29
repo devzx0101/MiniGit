@@ -395,6 +395,25 @@ bool testCherryPickAndRebase() {
     TEST_ASSERT(FileUtils::fileExists("main_update.txt"), "Upstream file present on rebased topic branch");
     TEST_ASSERT(FileUtils::fileExists("topic.txt"), "Topic file preserved after rebase");
 
+    // 5. Test Interactive Rebase: Squashing commits
+    FileUtils::writeFile("extra_part.txt", "Extra part\n");
+    char* addExtra[] = {(char*)"minigit", (char*)"add", (char*)"extra_part.txt"};
+    handleAdd(3, addExtra);
+    char* commitExtra[] = {(char*)"minigit", (char*)"commit", (char*)"-m", (char*)"Extra part commit"};
+    handleCommit(4, commitExtra);
+
+    std::string extraCommitHash;
+    Repository::Reference::resolveHead(extraCommitHash, ".minigit");
+
+    // Create interactive todo list squashing extra commit into topic commit
+    std::string todoContent = "pick " + extraCommitHash.substr(0, 7) + " Extra part commit\nsquash " + extraCommitHash.substr(0, 7) + " Extra part commit\n";
+    FileUtils::writeFile(".minigit/rebase-todo", "squash " + extraCommitHash.substr(0, 7) + " Extra part commit\n");
+
+    char* iRebaseArgs[] = {(char*)"minigit", (char*)"rebase", (char*)"-i", (char*)"main"};
+    int iRebaseRes = handleRebase(4, iRebaseArgs);
+    TEST_ASSERT(iRebaseRes == 0, "Interactive rebase executed successfully with squashing");
+    TEST_ASSERT(FileUtils::fileExists("extra_part.txt"), "Squashed file preserved in working tree");
+
     fs::current_path(origPath);
     return true;
 }
