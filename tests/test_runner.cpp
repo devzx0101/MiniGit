@@ -17,6 +17,10 @@
 #include "repository/merge_engine.hpp"
 #include "repository/remote_manager.hpp"
 #include "compression/zlib_utils.hpp"
+#include "commands/clean.hpp"
+#include "commands/stash.hpp"
+#include "commands/add.hpp"
+#include "commands/commit.hpp"
 
 namespace fs = std::filesystem;
 using namespace Repository;
@@ -283,6 +287,56 @@ bool testZlibCompression() {
     return true;
 }
 
+bool testCleanAndStash() {
+    std::cout << "\n=== Test 12: Worktree Stash & Clean Operations ===\n";
+    fs::path origPath = fs::current_path();
+    fs::current_path(TEST_DIR);
+
+    // 1. Test Clean
+    FileUtils::writeFile("untracked_junk.tmp", "Temporary garbage\n");
+    TEST_ASSERT(FileUtils::fileExists("untracked_junk.tmp"), "Untracked file created");
+
+    char* dryArgs[] = {(char*)"minigit", (char*)"clean", (char*)"-n"};
+    int dryRes = handleClean(3, dryArgs);
+    TEST_ASSERT(dryRes == 0, "Clean dry-run executed successfully");
+    TEST_ASSERT(FileUtils::fileExists("untracked_junk.tmp"), "Untracked file preserved after dry-run");
+
+    char* forceArgs[] = {(char*)"minigit", (char*)"clean", (char*)"-f"};
+    int forceRes = handleClean(3, forceArgs);
+    TEST_ASSERT(forceRes == 0, "Clean with -f force flag executed successfully");
+    TEST_ASSERT(!FileUtils::fileExists("untracked_junk.tmp"), "Untracked file cleaned from working tree");
+
+    // 2. Test Stash
+    FileUtils::writeFile("work_file.txt", "Initial base content\n");
+    char* addArgs[] = {(char*)"minigit", (char*)"add", (char*)"work_file.txt"};
+    handleAdd(3, addArgs);
+    char* commitArgs[] = {(char*)"minigit", (char*)"commit", (char*)"-m", (char*)"Base commit for stash"};
+    handleCommit(4, commitArgs);
+
+    // Modify file
+    FileUtils::writeFile("work_file.txt", "Uncommitted work in progress\n");
+
+    char* stashPushArgs[] = {(char*)"minigit", (char*)"stash", (char*)"push"};
+    int stashPushRes = handleStash(3, stashPushArgs);
+    TEST_ASSERT(stashPushRes == 0, "Stash push captured dirty working tree");
+
+    std::string contentReverted;
+    FileUtils::readFile("work_file.txt", contentReverted);
+    TEST_ASSERT(contentReverted.find("Initial base content") != std::string::npos, "Working tree reverted cleanly to HEAD");
+    TEST_ASSERT(FileUtils::fileExists(".minigit/refs/stash"), "Stash commit ref written to .minigit/refs/stash");
+
+    char* stashPopArgs[] = {(char*)"minigit", (char*)"stash", (char*)"pop"};
+    int stashPopRes = handleStash(3, stashPopArgs);
+    TEST_ASSERT(stashPopRes == 0, "Stash pop executed successfully");
+
+    std::string contentRestored;
+    FileUtils::readFile("work_file.txt", contentRestored);
+    TEST_ASSERT(contentRestored.find("Uncommitted work in progress") != std::string::npos, "WIP modifications restored after stash pop");
+
+    fs::current_path(origPath);
+    return true;
+}
+
 int main() {
     std::cout << "========================================\n";
     std::cout << "  Mini-Git Automated Integration Tests  \n";
@@ -302,12 +356,13 @@ int main() {
     allPassed &= test3WayMergeAndConflicts();
     allPassed &= testLocalRemoteOperations();
     allPassed &= testZlibCompression();
+    allPassed &= testCleanAndStash();
 
     cleanupTestDir();
 
     std::cout << "\n========================================\n";
     if (allPassed) {
-        std::cout << "  ALL 11 TEST SUITES PASSED! (100%)    \n";
+        std::cout << "  ALL 12 TEST SUITES PASSED! (100%)    \n";
         std::cout << "========================================\n";
         return 0;
     } else {
