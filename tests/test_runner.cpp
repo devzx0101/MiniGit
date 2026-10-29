@@ -21,6 +21,10 @@
 #include "commands/stash.hpp"
 #include "commands/add.hpp"
 #include "commands/commit.hpp"
+#include "commands/branch.hpp"
+#include "commands/checkout.hpp"
+#include "commands/cherry_pick.hpp"
+#include "commands/rebase.hpp"
 
 namespace fs = std::filesystem;
 using namespace Repository;
@@ -337,6 +341,64 @@ bool testCleanAndStash() {
     return true;
 }
 
+bool testCherryPickAndRebase() {
+    std::cout << "\n=== Test 13: History Replay: Cherry-Pick & Rebase ===\n";
+    fs::path origPath = fs::current_path();
+    fs::current_path(TEST_DIR);
+
+    // 1. Create a topic branch with a unique commit
+    char* brTopicArgs[] = {(char*)"minigit", (char*)"branch", (char*)"topic"};
+    handleBranch(3, brTopicArgs);
+    char* coTopicArgs[] = {(char*)"minigit", (char*)"checkout", (char*)"topic"};
+    handleCheckout(3, coTopicArgs);
+
+    FileUtils::writeFile("topic.txt", "Topic independent change\n");
+    char* addTopicArgs[] = {(char*)"minigit", (char*)"add", (char*)"topic.txt"};
+    handleAdd(3, addTopicArgs);
+    char* commitTopicArgs[] = {(char*)"minigit", (char*)"commit", (char*)"-m", (char*)"Topic branch commit"};
+    handleCommit(4, commitTopicArgs);
+
+    std::string topicHash;
+    Repository::Reference::resolveHead(topicHash, ".minigit");
+    TEST_ASSERT(!topicHash.empty(), "Topic commit generated");
+
+    // 2. Advance main branch with a separate commit
+    char* coMainArgs[] = {(char*)"minigit", (char*)"checkout", (char*)"main"};
+    handleCheckout(3, coMainArgs);
+
+    FileUtils::writeFile("main_update.txt", "Main branch update line\n");
+    char* addMainArgs[] = {(char*)"minigit", (char*)"add", (char*)"main_update.txt"};
+    handleAdd(3, addMainArgs);
+    char* commitMainArgs[] = {(char*)"minigit", (char*)"commit", (char*)"-m", (char*)"Main branch update"};
+    handleCommit(4, commitMainArgs);
+
+    // 3. Test Cherry-Pick: Apply topic commit onto a separate hotfix branch
+    char* brHotfixArgs[] = {(char*)"minigit", (char*)"branch", (char*)"hotfix"};
+    handleBranch(3, brHotfixArgs);
+    char* coHotfixArgs[] = {(char*)"minigit", (char*)"checkout", (char*)"hotfix"};
+    handleCheckout(3, coHotfixArgs);
+
+    char* cpArgs[] = {(char*)"minigit", (char*)"cherry-pick", (char*)topicHash.c_str()};
+    int cpRes = handleCherryPick(3, cpArgs);
+    TEST_ASSERT(cpRes == 0, "Cherry-pick completed successfully");
+    TEST_ASSERT(FileUtils::fileExists("topic.txt"), "Cherry-picked file applied to hotfix working tree");
+
+    std::string hotfixHead;
+    Repository::Reference::resolveHead(hotfixHead, ".minigit");
+    TEST_ASSERT(!hotfixHead.empty() && hotfixHead != topicHash, "Cherry-pick created a distinct commit hash");
+
+    // 4. Test Rebase: Rebase topic branch on top of main
+    handleCheckout(3, coTopicArgs);
+    char* rebaseArgs[] = {(char*)"minigit", (char*)"rebase", (char*)"main"};
+    int rebaseRes = handleRebase(3, rebaseArgs);
+    TEST_ASSERT(rebaseRes == 0, "Rebase executed successfully");
+    TEST_ASSERT(FileUtils::fileExists("main_update.txt"), "Upstream file present on rebased topic branch");
+    TEST_ASSERT(FileUtils::fileExists("topic.txt"), "Topic file preserved after rebase");
+
+    fs::current_path(origPath);
+    return true;
+}
+
 int main() {
     std::cout << "========================================\n";
     std::cout << "  Mini-Git Automated Integration Tests  \n";
@@ -357,12 +419,13 @@ int main() {
     allPassed &= testLocalRemoteOperations();
     allPassed &= testZlibCompression();
     allPassed &= testCleanAndStash();
+    allPassed &= testCherryPickAndRebase();
 
     cleanupTestDir();
 
     std::cout << "\n========================================\n";
     if (allPassed) {
-        std::cout << "  ALL 12 TEST SUITES PASSED! (100%)    \n";
+        std::cout << "  ALL 13 TEST SUITES PASSED! (100%)    \n";
         std::cout << "========================================\n";
         return 0;
     } else {
