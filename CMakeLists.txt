@@ -35,6 +35,7 @@ set(MINIGIT_SOURCES
     src/commands/clean.cpp
     src/commands/cherry_pick.cpp
     src/commands/rebase.cpp
+    src/commands/gc.cpp
     src/commands/help.cpp
     src/repository/index.cpp
     src/repository/reference.cpp
@@ -47,6 +48,8 @@ set(MINIGIT_SOURCES
     src/objects/blob.cpp
     src/objects/tree.cpp
     src/objects/commit.cpp
+    src/objects/tag.cpp
+    src/objects/packfile.cpp
     src/hashing/sha1.cpp
     src/filesystem/file_utils.cpp
     src/compression/zlib_utils.cpp

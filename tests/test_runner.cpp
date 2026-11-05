@@ -25,6 +25,10 @@
 #include "commands/checkout.hpp"
 #include "commands/cherry_pick.hpp"
 #include "commands/rebase.hpp"
+#include "commands/tag.hpp"
+#include "commands/gc.hpp"
+#include "objects/tag.hpp"
+#include "objects/packfile.hpp"
 
 namespace fs = std::filesystem;
 using namespace Repository;
@@ -418,6 +422,56 @@ bool testCherryPickAndRebase() {
     return true;
 }
 
+bool testAnnotatedTagsAndPackfileGc() {
+    std::cout << "\n=== Test 14: Annotated Tag Objects & Packfile Compaction (GC) ===\n";
+    fs::path origPath = fs::current_path();
+    fs::current_path(TEST_DIR);
+
+    std::string repoDir = ".minigit";
+
+    // 1. Test Annotated Tag Creation
+    std::string headCommit;
+    Repository::Reference::resolveHead(headCommit, repoDir);
+    TEST_ASSERT(!headCommit.empty(), "Head commit resolved for annotated tag creation");
+
+    char* tagArgs[] = {(char*)"minigit", (char*)"tag", (char*)"-a", (char*)"v2.0-release", (char*)"-m", (char*)"Production Ready 2.0 release"};
+    int tagRes = handleTag(6, tagArgs);
+    TEST_ASSERT(tagRes == 0, "Annotated tag created with -a -m successfully");
+    TEST_ASSERT(Repository::Reference::tagExists("v2.0-release", repoDir), "Annotated tag reference exists");
+
+    std::string tagObjHash;
+    Repository::Reference::getTagCommit("v2.0-release", tagObjHash, repoDir);
+    TEST_ASSERT(!tagObjHash.empty() && tagObjHash != headCommit, "Annotated tag ref points to dedicated tag object");
+
+    // Load and verify Tag Object
+    Objects::Tag loadedTag;
+    bool tagLoaded = Objects::Tag::load(tagObjHash, loadedTag, repoDir);
+    TEST_ASSERT(tagLoaded, "Tag object successfully read and deserialized from object DB");
+    TEST_ASSERT(loadedTag.getTagName() == "v2.0-release", "Tag name preserved in tag object");
+    TEST_ASSERT(loadedTag.getObjectHash() == headCommit, "Tag object correctly points to underlying commit");
+    TEST_ASSERT(loadedTag.getMessage() == "Production Ready 2.0 release", "Release message preserved in tag object");
+
+    // 2. Test Packfile Generation & Garbage Collection (minigit gc)
+    auto looseBefore = Objects::Packfile::findLooseObjects(repoDir);
+    TEST_ASSERT(looseBefore.size() > 0, "Multiple loose objects exist prior to GC");
+
+    char* gcArgs[] = {(char*)"minigit", (char*)"gc"};
+    int gcRes = handleGc(2, gcArgs);
+    TEST_ASSERT(gcRes == 0, "minigit gc executed successfully");
+
+    auto looseAfter = Objects::Packfile::findLooseObjects(repoDir);
+    TEST_ASSERT(looseAfter.empty(), "All loose objects compacted and pruned from disk");
+
+    // 3. Test Direct Transparent Read From .pack via 256-bucket fanout index
+    std::string readType, readContent;
+    bool packedRead = Objects::ObjectStore::readObject(tagObjHash, readType, readContent, repoDir);
+    TEST_ASSERT(packedRead, "Object retrieved directly from .pack archive without loose file on disk");
+    TEST_ASSERT(readType == "tag", "Object type 'tag' correctly resolved from packfile entry");
+
+    fs::current_path(origPath);
+    return true;
+}
+
 int main() {
     std::cout << "========================================\n";
     std::cout << "  Mini-Git Automated Integration Tests  \n";
@@ -439,12 +493,13 @@ int main() {
     allPassed &= testZlibCompression();
     allPassed &= testCleanAndStash();
     allPassed &= testCherryPickAndRebase();
+    allPassed &= testAnnotatedTagsAndPackfileGc();
 
     cleanupTestDir();
 
     std::cout << "\n========================================\n";
     if (allPassed) {
-        std::cout << "  ALL 13 TEST SUITES PASSED! (100%)    \n";
+        std::cout << "  ALL 14 TEST SUITES PASSED! (100%)    \n";
         std::cout << "========================================\n";
         return 0;
     } else {

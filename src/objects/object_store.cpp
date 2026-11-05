@@ -1,4 +1,5 @@
 #include "objects/object_store.hpp"
+#include "objects/packfile.hpp"
 #include "hashing/sha1.hpp"
 #include "filesystem/file_utils.hpp"
 #include "compression/zlib_utils.hpp"
@@ -59,7 +60,8 @@ bool ObjectStore::readObject(const std::string& hash, std::string& outType, std:
     std::string fileBytes;
 
     if (!FileUtils::readFile(filePath, fileBytes)) {
-        return false;
+        // Fallback: check in .pack archives
+        return Packfile::readPackedObject(hash, outType, outContent, repoDir);
     }
 
     std::string rawData;

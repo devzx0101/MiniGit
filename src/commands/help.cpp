@@ -18,7 +18,8 @@ int handleHelp(int argc, char* argv[]) {
               << "   " << Color::BoldGreen << "status" << Color::Reset << "                 Show the working tree status\n"
               << "   " << Color::BoldGreen << "diff" << Color::Reset << " [--staged]        Show changes between commits, commit and working tree\n"
               << "   " << Color::BoldGreen << "stash" << Color::Reset << " [push|pop|list]  Stash changes in a dirty working directory away\n"
-              << "   " << Color::BoldGreen << "clean" << Color::Reset << " [-f] [-d]        Remove untracked files from the working tree\n\n"
+              << "   " << Color::BoldGreen << "clean" << Color::Reset << " [-f] [-d]        Remove untracked files from the working tree\n"
+              << "   " << Color::BoldGreen << "gc" << Color::Reset << "                    Cleanup unnecessary files and optimize local repository\n\n"
               << Color::BoldYellow << "Examine the history and state:\n" << Color::Reset
               << "   " << Color::BoldGreen << "log" << Color::Reset << " [--oneline] [--graph] Show commit logs with graph and decorations\n"
               << "   " << Color::BoldGreen << "reflog" << Color::Reset << "                 Manage and display reflog information\n"
