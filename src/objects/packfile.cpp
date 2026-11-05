@@ -273,3 +273,4 @@ bool Packfile::readPackedObject(const std::string& hash, std::string& outType, s
 }
 
 } // namespace Objects
+

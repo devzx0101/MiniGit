@@ -45,3 +45,4 @@ private:
 } // namespace Objects
 
 #endif // TAG_OBJECT_HPP
+
