@@ -1,4 +1,4 @@
-# Mini-Git: A Functional High-Performance Git Implementation in C++
+# Mini-Git: High-Performance Git Implementation in C++
 
 <p align="center">
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-00599C?style=for-the-badge&logo=c%2B%2B" alt="C++17" />
@@ -10,230 +10,185 @@
 
 ---
 
-## ⚡ Quick Evaluation & Download Guide (For Reviewers & Professors)
+## 📌 Overview
 
-If you are grading, evaluating, or testing Mini-Git, here is how to clone, build, and test the entire project in **under 60 seconds**:
+**Mini-Git** is a lightweight, high-performance distributed version control system built from scratch in modern **C++17**. It models the exact architectural layers, algorithms, and on-disk binary structures of official Git:
 
-### Step 1: Clone the Repository
-Open PowerShell, Command Prompt, or Terminal:
+- **Full Object Engine**: Content-addressable SHA-1 storage for **Blobs**, **Trees**, **Commits**, and **Annotated Tags**.
+- **Binary Compatibility**: Standard RFC 1950 zlib streaming `DEFLATE`/`INFLATE` compression (`0x78` header family).
+- **Packfile Compaction**: Garbage collection engine (`minigit gc`) bundling loose objects into binary `.pack` archives indexed with **256-bucket fan-out tables** for $O(\log N)$ binary search.
+- **Graph & Sequence Algorithms**:
+  - **Lowest Common Ancestor (LCA)** Directed Acyclic Graph (DAG) traversal for 3-way merges and history replays.
+  - **Longest Common Subsequence (LCS)** dynamic programming for line-by-line unified diff calculation.
+- **Advanced Workflows**: Stashing via dangling commits, interactive rebase (`pick`, `squash`, `reword`, `drop`), cherry-picking, safe clean, and local filesystem remotes (`clone`, `fetch`, `push`, `pull`).
+- **Terminal CLI**: 27 fully registered commands with cross-platform ANSI color output.
+
+---
+
+## ⚡ Quick Start
+
+### 1. Installation & Build
+
+#### Prerequisites
+- C++17 compatible compiler (GCC 9+, Clang 10+, or MSVC 2019+)
+- CMake 3.10+
+- Ninja or Make
+- `zlib` development library
+
+#### Build from Source
 ```bash
+# Clone repository
 git clone https://github.com/devzx0101/MiniGit.git
 cd MiniGit
-```
 
-### Step 2: Build the Executables (C++17 + CMake)
-```bash
+# Configure & build executable
 cmake -B build -G "Ninja"
 cmake --build build
 ```
-*(On Windows with MinGW/MSYS2, Linux with GCC, or macOS with Clang, this generates the binaries in the `build/` folder).*
 
-### Step 3: Run the Automated Test Suite (Proof of Correctness)
+The compiled binaries will be generated inside the `build/` directory:
+- `build/minigit.exe` (or `build/minigit` on Linux/macOS) — Command-Line Interface.
+- `build/minigit_tests.exe` (or `build/minigit_tests` on Linux/macOS) — Test Runner.
+
+### 2. Verify Installation
 ```bash
 ./build/minigit_tests.exe
 ```
-*(On Linux/macOS run `./build/minigit_tests`)*.  
-**Result:** Runs all **14 comprehensive test suites** covering all 27 Git operations, algorithms, and compression with **100% pass rate**:
+Executes all **14 automated integration test suites (100% pass rate)**:
 ```text
+========================================
+  Mini-Git Automated Integration Tests  
+========================================
+...
 ========================================
   ALL 14 TEST SUITES PASSED! (100%)    
 ========================================
 ```
 
-### Step 4: Run the CLI Executable
-```bash
-./build/minigit.exe help
-```
-Displays the interactive ANSI color-coded CLI reference with all 27 commands!
-
 ---
 
-## 🎬 3-Minute Live Interactive Demonstration
-
-To test live Git operations in an isolated demo folder:
+## 🚀 Basic Usage & Workflow
 
 ```bash
-# 1. Create a demo workspace
-mkdir demo_repo
-cd demo_repo
+# 1. Initialize a repository
+minigit init
 
-# 2. Initialize Mini-Git repository
-..\build\minigit.exe init
+# 2. Stage and commit files
+echo "print('Hello Mini-Git')" > main.py
+minigit status
+minigit add main.py
+minigit commit -m "feat: initial commit"
 
-# 3. Create a file & check status (Shows in RED)
-echo "print('Hello Mini-Git')" > app.py
-..\build\minigit.exe status
+# 3. View commit graph
+minigit log --oneline --graph
 
-# 4. Stage and commit changes (Shows in GREEN)
-..\build\minigit.exe add app.py
-..\build\minigit.exe commit -m "feat: initial commit"
+# 4. Branching and checkout
+minigit branch feature
+minigit checkout feature
+echo "print('Feature ready')" >> main.py
+minigit commit -m "feat: implement feature"
+minigit log --oneline --graph
 
-# 5. Inspect commit log with ASCII DAG Graph
-..\build\minigit.exe log --oneline --graph
+# 5. Merge feature branch into main
+minigit checkout main
+minigit merge feature
 
-# 6. Branching & feature development
-..\build\minigit.exe branch feature
-..\build\minigit.exe checkout feature
-echo "print('Feature update')" >> app.py
-..\build\minigit.exe commit -m "feat: update feature"
-..\build\minigit.exe log --oneline --graph
+# 6. Tag releases
+minigit tag -a v1.0.0 -m "Release version 1.0.0"
+minigit cat-file -p v1.0.0
 
-# 7. 3-Way Merge back to main
-..\build\minigit.exe checkout main
-..\build\minigit.exe merge feature
-
-# 8. Create an Annotated Tag & inspect payload
-..\build\minigit.exe tag -a v1.0 -m "Production Release 1.0"
-..\build\minigit.exe cat-file -p v1.0
-
-# 9. Compact repository with Garbage Collection
-..\build\minigit.exe gc
+# 7. Optimize storage with garbage collection
+minigit gc
 ```
 
 ---
 
-## 🏛️ OOPs & Software Architecture Breakdown
+## 💻 Command Reference (27 Commands)
 
-Mini-Git is engineered with strict adherence to **Object-Oriented Programming (OOP)** and modern **C++17** software engineering standards:
-
-| OOP / C++ Principle | Where Applied in Mini-Git | Architectural Justification |
+| Category | Command | Description |
 |---|---|---|
-| **Encapsulation** | `Objects::Commit`, `Objects::Tag`, `Repository::Index` | Internal state (hashes, author identity, timestamp, tree refs) is kept `private`. Modifications and reads are strictly gated via public getters and setters, preventing corrupt repository states. |
-| **Data Abstraction** | `Repository::DiffEngine`, `Repository::MergeEngine`, `Objects::ObjectStore` | Complex algorithmic implementations (2D dynamic programming matrices for **LCS** line diffs, and DAG traversals for **LCA** merges) are completely hidden behind clean static APIs (`unifiedDiff()`, `findLCA()`). |
-| **Separation of Concerns & Namespaces** | `Objects::*`, `Repository::*`, `Compression::*`, `FileUtils::*` | Prevents naming collisions and decouples content-addressable immutable storage (`Objects`) from mutable working tree states and branches (`Repository`). |
-| **RAII (Resource Management)** | `zlib_utils.cpp`, `file_utils.cpp` | Zero raw memory allocations or memory leaks. `z_stream` buffers, file streams (`std::ifstream`, `std::ofstream`), and binary chunks are automatically acquired on initialization and reclaimed upon scope destruction. |
-| **Standard Template Library (STL)** | Maps, Vectors, Sets across all engines | Utilizes `std::map<std::string, IndexEntry>` for sorted $O(\log N)$ file path resolution in staging, and `std::set<std::string>` for union calculation in 3-way line merges. |
+| **Repository & Remotes** | `minigit init` | Initialize an empty Mini-Git repository with `main` branch. |
+| | `minigit clone <src> [<dest>]` | Clone a repository, object store, and refs into a new working tree. |
+| | `minigit remote add <name> <dir>` | Register a local remote tracking endpoint. |
+| | `minigit fetch [<remote>]` | Download objects and synchronize remote tracking references. |
+| | `minigit push [<remote>] [<branch>]`| Push commits and update remote branch references. |
+| | `minigit pull [<remote>] [<branch>]`| Fetch from remote and merge changes into active branch. |
+| **Working Tree & Staging** | `minigit add <path>...` | Stage files or directories, honoring `.minigitignore` patterns. |
+| | `minigit status` | 3-way status check (working directory, index, and HEAD). |
+| | `minigit diff [--staged]` | Unified line diff between working copy & index, or index & HEAD. |
+| | `minigit restore [--staged] <file>`| Discard working copy modifications or unstage files from index. |
+| | `minigit reset [--hard] [<files>]` | Unstage index files or wipe working tree back to HEAD (`--hard`). |
+| | `minigit stash [push\|pop\|list]` | Stash working directory changes onto dangling commit snapshots. |
+| | `minigit clean [-f] [-d] [-n]` | Remove untracked files with force/dry-run safety validation. |
+| | `minigit gc` | Pack loose objects into binary `.pack` archives and clean disk space. |
+| **History & Branching** | `minigit commit -m "<msg>"` | Create root tree from staging index and advance active branch. |
+| | `minigit log [--oneline] [--graph]`| Render commit history with branch decorations and ASCII DAG graph. |
+| | `minigit reflog` | Display reference transition history of HEAD and local branches. |
+| | `minigit branch [-d] [<name>]` | List branches (active marked `*`), create branch, or delete branch. |
+| | `minigit checkout [-b] <target>` | Switch branches, create and switch (`-b`), or checkout commit hash. |
+| | `minigit merge <branch>` | Perform 3-way LCA merge, fast-forward, or insert conflict markers. |
+| | `minigit rebase [-i] <upstream>` | Replay commits onto upstream; edit history with interactive todo list. |
+| | `minigit cherry-pick <commit>` | Apply patch delta from an existing commit directly onto HEAD. |
+| | `minigit tag [-a] [-m] [-d] [<name>]`| Create lightweight/annotated tags, list tags, or delete tags. |
+| **Inspection & Plumbing** | `minigit cat-file (-p\|-t\|-s) <obj>`| Pretty-print content (`-p`), display type (`-t`), or uncompressed size (`-s`). |
+| | `minigit ls-files [--stage]` | List all tracked files and mode/SHA-1 entries in the staging area. |
+| | `minigit hash-object [-w] <file>` | Compute SHA-1 hash of a file and optionally store it in object DB. |
+| | `minigit help` | Display full colored CLI reference. |
 
 ---
 
-## 📌 Executive Summary & Subsystems
+## 🏛️ Architecture & Software Design
 
-**Mini-Git** models and reproduces the exact internal subsystems and on-disk binary layouts found in the official Linux Git kernel codebase:
+Mini-Git follows clean, decoupled object-oriented system design principles:
 
-- **100% Core Git Object Engine**: Content-addressable SHA-1 storage covering all 4 fundamental Git object types: **Blobs**, **Trees**, **Commits**, and **Annotated Tags**.
-- **Official Git Binary Compatibility**: RFC 1950 zlib streaming `DEFLATE`/`INFLATE` compression matching Git's loose object header format (`0x78` magic byte family).
-- **Packfile Compaction (`.pack` / `.idx`)**: `minigit gc` garbage collection bundling loose objects into binary packfiles with 256-bucket first-level fan-out index tables for $O(\log N)$ binary search lookups.
-- **Graph & Sequence Algorithms**:
-  - **LCA (Lowest Common Ancestor)** DAG traversal for 3-way merge resolution, conflict detection, and history replay.
-  - **LCS (Longest Common Subsequence)** dynamic programming for line-by-line unified diff calculation.
-- **Advanced Git Engineering**: Stash stacks via dangling commit graphs, interactive rebase (`pick`, `squash`, `reword`, `drop`), cherry-picking, safe cleaning, and local directory remote synchronization (`clone`, `fetch`, `push`, `pull`).
-- **Complete Terminal CLI**: 27 fully registered commands with cross-platform ANSI terminal coloring and Win32 Virtual Terminal Processing (VTP).
+| Design Concept | Component / Subsystem | Implementation Details |
+|---|---|---|
+| **Encapsulation** | `Objects::Commit`, `Objects::Tag`, `Repository::Index` | Internal states (tree hashes, author timestamps, index entries) are `private`. All data mutations are strictly controlled through public APIs, preventing repository corruption. |
+| **Data Abstraction** | `Repository::DiffEngine`, `Repository::MergeEngine`, `Objects::ObjectStore` | Complex algorithmic implementations (dynamic programming 2D matrices for **LCS** line diffs, and DAG traversals for **LCA** merges) are encapsulated behind clean static interfaces (`unifiedDiff()`, `findLCA()`). |
+| **Separation of Concerns** | `Objects::*`, `Repository::*`, `Compression::*`, `FileUtils::*` | Decouples immutable content-addressable storage (`Objects`) from mutable working trees, references, and branch pointers (`Repository`). |
+| **RAII Resource Safety** | `zlib_utils.cpp`, `file_utils.cpp` | Clean lifecycle management for `z_stream` buffers, file streams, and memory allocations without manual pointer leaks. |
+| **STL Data Structures** | Maps, Vectors, Sets | Employs `std::map<std::string, IndexEntry>` for sorted $O(\log N)$ file path staging, and `std::set<std::string>` for union computations during 3-way merges. |
 
 ---
 
-## 🏗️ Subsystem Layout
+## 🏗️ Repository Layout
 
 ```
 MiniGit/
-├── CMakeLists.txt                 # Modern CMake build configuration & test target
-├── README.md                      # Comprehensive technical documentation
+├── CMakeLists.txt                 # CMake configuration & test targets
+├── README.md                      # Technical documentation & quick start
 ├── src/
 │   ├── main.cpp                   # Central CLI dispatcher routing all 27 commands
 │   ├── terminal.hpp               # Cross-platform ANSI color subsystem with Win32 VTP
 │   ├── filesystem/
-│   │   ├── file_utils.hpp / .cpp  # Filesystem abstraction, recursive traversals, timestamps
+│   │   ├── file_utils.hpp / .cpp  # Cross-platform filesystem operations & timestamps
 │   ├── hashing/
-│   │   ├── sha1.hpp / .cpp        # Standard cryptographic SHA-1 implementation
+│   │   ├── sha1.hpp / .cpp        # SHA-1 cryptographic implementation
 │   ├── compression/
 │   │   ├── zlib_utils.hpp / .cpp  # RFC 1950 zlib streaming DEFLATE / INFLATE
 │   ├── objects/
-│   │   ├── object_store.hpp / .cpp# Content-addressable storage (.minigit/objects/xx/...)
-│   │   ├── blob.hpp / .cpp        # Immutable byte content objects
+│   │   ├── object_store.hpp / .cpp# Content-addressable object store (.minigit/objects/xx/...)
+│   │   ├── blob.hpp / .cpp        # Immutable raw byte content objects
 │   │   ├── tree.hpp / .cpp        # Hierarchical directory tree serialization
 │   │   ├── commit.hpp / .cpp      # Commit DAG nodes (tree, parents, author, message)
-│   │   ├── tag.hpp / .cpp         # Git's 4th object type: Annotated tag objects
-│   │   └── packfile.hpp / .cpp    # Binary .pack generation & .idx version 2 fanout index
+│   │   ├── tag.hpp / .cpp         # Annotated tag objects (target, tagger, timestamp, message)
+│   │   └── packfile.hpp / .cpp    # Binary .pack generator & .idx version 2 fanout index
 │   ├── repository/
 │   │   ├── index.hpp / .cpp       # Staging area persistence (.minigit/index)
 │   │   ├── reference.hpp / .cpp   # HEAD, branches, tags, remote tracking refs, reflog
-│   │   ├── ignore.hpp / .cpp      # .minigitignore / .gitignore wildcard & directory matching
+│   │   ├── ignore.hpp / .cpp      # Pattern & path filtering (.minigitignore)
 │   │   ├── working_tree.hpp / .cpp# 3-way status detection, file restoration, checkout
 │   │   ├── diff_engine.hpp / .cpp # Unified line diff engine (LCS dynamic programming)
 │   │   ├── merge_engine.hpp / .cpp# Lowest Common Ancestor (LCA) traversal & 3-way merge
-│   │   └── remote_manager.hpp / .cpp# Remote synchronization (clone, fetch, push, pull)
+│   │   └── remote_manager.hpp / .cpp# Local file-based remotes (clone, fetch, push, pull)
 │   └── commands/                  # 27 Modular Command Handlers
-│       ├── init.cpp               # minigit init
-│       ├── add.cpp                # minigit add <file>... / .
-│       ├── commit.cpp             # minigit commit -m <msg>
-│       ├── status.cpp             # minigit status (color-coded staged/unstaged)
-│       ├── log.cpp                # minigit log [--oneline] [--graph]
-│       ├── branch.cpp             # minigit branch [-d] [<name>]
-│       ├── checkout.cpp           # minigit checkout [-b] <name>
-│       ├── diff.cpp               # minigit diff [--staged]
-│       ├── reset.cpp              # minigit reset [--hard] [<file>...]
-│       ├── restore.cpp            # minigit restore [--staged] <file>...
-│       ├── stash.cpp              # minigit stash [push|pop|list|clear|drop]
-│       ├── clean.cpp              # minigit clean [-f] [-d] [-n]
-│       ├── cherry_pick.cpp        # minigit cherry-pick <commit>
-│       ├── rebase.cpp             # minigit rebase [-i] <upstream>
-│       ├── tag.cpp                # minigit tag [-a] [-m] [-d] [<name>]
-│       ├── gc.cpp                 # minigit gc (packfile garbage collection)
-│       ├── merge.cpp              # minigit merge <branch>
-│       ├── reflog.cpp             # minigit reflog
-│       ├── cat_file.cpp           # minigit cat-file (-p|-t|-s) <object>
-│       ├── ls_files.cpp           # minigit ls-files [--stage]
-│       ├── hash_object.cpp        # minigit hash-object [-w] <file>
-│       ├── remote.cpp             # minigit remote / clone / fetch / push / pull
-│       └── help.cpp               # minigit help
+│       ├── init.cpp, add.cpp, commit.cpp, status.cpp, log.cpp, branch.cpp, ...
 └── tests/
     └── test_runner.cpp            # 14 Automated Integration Test Suites (100% pass)
 ```
 
 ---
 
-## 📦 Object Model & On-Disk Format
-
-### The 4 Git Object Types
-Every object is stored as `zlib_deflate("<type> <size>\0<content>")` inside `.minigit/objects/xx/xxxxxxxx...`:
-
-| Type | On-Disk Payload Structure | Purpose |
-|---|---|---|
-| **`blob`** | `<raw byte contents>` | Stores file content without filename or metadata |
-| **`tree`** | `<mode> <type> <hash>\t<name>\n...` | Represents directory hierarchies recursively |
-| **`commit`**| `tree <hash>\nparent <hash>\nauthor ...\ncommitter ...\n\n<msg>` | Snapshot node in the commit DAG |
-| **`tag`** | `object <hash>\ntype commit\ntag <name>\ntagger ...\n\n<msg>` | Dedicated object for annotated releases |
-
-### Binary Packfiles (`.pack`) & Fan-Out Index (`.idx`)
-When `minigit gc` runs:
-1. **`.pack` File**: Prepend `PACK` magic header (4 bytes) + Version 2 (4 bytes) + Object Count (4 bytes). Each entry contains a 4-byte uncompressed size header followed by zlib-deflated payload and CRC32 verification. The pack concludes with a 20-byte SHA-1 trailer.
-2. **`.idx` (Version 2) Index**: Starts with `\xFFtOc` header (4 bytes) + Version 2 (4 bytes) + **256-entry cumulative fanout table** (4 bytes per bucket) enabling $O(1)$ prefix partitioning followed by $O(\log N)$ binary search across sorted 20-byte SHA-1 hashes.
-
----
-
-## 💻 Complete Command Reference (27 Commands)
-
-| Category | Command | Description |
-|---|---|---|
-| **Setup & Remotes** | `minigit init` | Initialize a new empty Mini-Git repository with `main` branch. |
-| | `minigit clone <src> [<dest>]` | Clone a repository, object store, and refs into a new working directory. |
-| | `minigit remote add <name> <dir>` | Register a local remote tracking endpoint. |
-| | `minigit fetch [<remote>]` | Download missing objects and update remote tracking refs (`refs/remotes/origin/main`). |
-| | `minigit push [<remote>] [<branch>]`| Push local branch commits and synchronize remote refs. |
-| | `minigit pull [<remote>] [<branch>]`| Fetch from remote and merge changes into active branch. |
-| **Working Area** | `minigit add <path>...` | Stage files or directories, respecting `.minigitignore` patterns. |
-| | `minigit status` | 3-way comparison of working directory, index, and HEAD with ANSI coloring. |
-| | `minigit diff [--staged]` | Unified line diff between working copy & index, or index & HEAD. |
-| | `minigit restore [--staged] <file>`| Discard working copy changes or unstage files from index. |
-| | `minigit reset [--hard] [<files>]` | Unstage index files or wipe working tree back to HEAD (`--hard`). |
-| | `minigit stash [push\|pop\|list]` | Safely stash uncommitted work onto dangling commits and restore them. |
-| | `minigit clean [-f] [-d] [-n]` | Remove untracked files or directories with force/dry-run safety checks. |
-| | `minigit gc` | Compact loose objects into binary `.pack` archives and prune disk space. |
-| **Commit & History** | `minigit commit -m "<msg>"` | Create root tree from staging index, write commit DAG node, advance branch. |
-| | `minigit log [--oneline] [--graph]`| Walk commit DAG backwards and render ASCII topology graphs. |
-| | `minigit reflog` | Display reference transition history of HEAD and local branches. |
-| | `minigit branch [-d] [<name>]` | List branches (active marked `*`), create branch, or delete branch. |
-| | `minigit checkout [-b] <target>` | Switch branches, create and switch (`-b`), or checkout commit hash. |
-| | `minigit merge <branch>` | Perform 3-way LCA merge, handle fast-forwards, or insert conflict markers. |
-| | `minigit rebase [-i] <upstream>` | Linearly replay commits onto upstream; edit history with interactive todo list. |
-| | `minigit cherry-pick <commit>` | Compute commit patch delta against its parent and apply cleanly onto HEAD. |
-| | `minigit tag [-a] [-m] [-d] [<name>]`| Create lightweight tags, annotated tag objects, list, or delete tags. |
-| **Plumbing** | `minigit cat-file (-p\|-t\|-s) <obj>`| Pretty-print content (`-p`), display type (`-t`), or uncompressed size (`-s`). |
-| | `minigit ls-files [--stage]` | List all tracked files and mode/SHA-1 entries in the staging area. |
-| | `minigit hash-object [-w] <file>` | Compute SHA-1 hash of a file and optionally write it to object database. |
-| | `minigit help` | Display full colored CLI reference. |
-
----
-
 ## 📄 License
 
-This project is open-source and released under the **[MIT License](LICENSE)**. Built for educational and systems-programming reference.
+This project is licensed under the **[MIT License](LICENSE)**.
